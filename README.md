@@ -6,4 +6,4 @@ pandas, numpy, glob
 
 # Workflow
 
-[raw files put into Spectronaut for analysis.pdf](https://github.com/user-attachments/files/19696909/raw.files.put.into.Spectronaut.for.analysis.pdf)
+![raw files put into Spectronaut for analysis](https://github.com/user-attachments/assets/afece9f1-c9d0-42e9-bb52-b48c83bfc512)
