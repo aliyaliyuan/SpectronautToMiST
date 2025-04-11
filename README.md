@@ -6,4 +6,5 @@ pandas, numpy, glob
 
 # Workflow
 
-![raw files put into Spectronaut for analysis](https://github.com/user-attachments/assets/afece9f1-c9d0-42e9-bb52-b48c83bfc512)
+![raw files put into Spectronaut for analysis](https://github.com/user-attachments/assets/d79520ed-dcdf-430c-839f-67e005ef38b9)
+
