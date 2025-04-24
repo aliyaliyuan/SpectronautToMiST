@@ -1,0 +1,41 @@
+### MiST UpSet Plot
+
+## Install Packages (if you have not already installed them in RStudio_
+install.packages("UpSetR")
+install.packages("tidyverse")
+install.packages("plyr")
+
+## Load Packages
+library(UpSetR)
+library(tidyverse)
+library(plyr)
+
+## Read in MiST results (.tsv file) (Replace /path/to/MiST/Results.txt with your file path)
+df <- read_tsv('/path/to/MiST/Results.txt')
+
+## This sample code is assuming 3 baits, but add as many baits as you used to replace "Bait1", "Bait2", "Bait3", etc. Only keeps MiST scores >=0.75 as that is typically the significant cut-off value. 
+Bait1_df <- subset(df, df['Bait'] == "Bait1" & df['MiST'] >= 0.75)
+Bait2_df <- subset(df, df['Bait'] == "Bait2" & df['MiST'] >= 0.75)
+Bait3_df <- subset(df, df['Bait'] == "Bait3" & df['MiST'] >= 0.75)
+
+## Extract prey values 
+Bait1_prey <- Bait1_df$Prey
+Bait2_prey <- Bait2_df$Prey
+Bait3_prey <- Bait3_df$Prey
+
+## Create a list of vectors of the bait names and the unique prey values
+x <- z <- list(
+  Bait1 = unique(Bait1_prey),
+  Bait2 = unique(Bait2_prey),
+  Bait3 = unique(Bait3_prey)
+)
+
+## Create the UpSet plot
+upset(fromList(x), order.by = "freq")
+
+## Save as a pdf file
+pdf("TFEB_interactions_upset.pdf", width = 8, height = 6)  # adjust size as needed
+
+upset(fromList(z), order.by = "freq")
+
+dev.off()
