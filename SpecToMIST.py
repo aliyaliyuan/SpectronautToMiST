@@ -1,18 +1,9 @@
 import pandas as pd
 import numpy as np
-import glob
-
-# Load all your TSVs (assuming you had to split them, if not, just list the 1 tsv)
-all_files = glob.glob("/path/to/*.tsv")
-
-exp_headers = []
-for file in all_files:
-    df = pd.read_csv(file, sep="\t")
-    exp_headers.append(df)  
 
 
-#Combine all data
-combined = pd.concat(exp_headers)
+#Load your Spectronaut output report
+combined = pd.read_csv("/path/to/Spectronautoutput_sample.tsv", sep="\t")
 
 #Format multi-protein cells
 def split_specific_columns(df, columns_to_split, delimiter=";"):
@@ -51,7 +42,6 @@ combined = split_specific_columns(
 combined["PG.MolecularWeight"] = pd.to_numeric(combined["PG.MolecularWeight"], errors="coerce")
 combined["PEP.MS1Quantity"] = pd.to_numeric(combined["PEP.MS1Quantity"], errors="coerce")
 
-
 # Estimate length as MolecularWeight // 110 (using floor division to round to the nearest integer to be compatible with MiST)
 combined["Length"] = combined["PG.MolecularWeight"] // 110
 
@@ -59,9 +49,9 @@ combined["Length"] = combined["PG.MolecularWeight"] // 110
 combined["PEP.MS1Quantity"] = combined["PEP.MS1Quantity"].fillna(0)
 
 # Define baits 
-# In this case, there was only 1 bait, so replace "P19484" with desired bait
+# In this case, there was only 1 bait
 def extract_bait_name(filename):
-    return "P19484"
+    return "[INSERT BAIT]"
 
 combined["Bait"] = combined["R.FileName"].apply(extract_bait_name)
 
@@ -72,6 +62,10 @@ agg_df = agg_df.reset_index().rename(columns={"PG.ProteinAccessions": "Prey"})
 # Calculate mean length per protein
 #Note: All the proteins listed should be the same PG.MolecularWeight (and hence, Length), but I did this to prevent duplicate errors
 length_df = combined.groupby("PG.ProteinAccessions")["Length"].mean().reset_index()
+
+agg_df["Prey"] = agg_df["Prey"].astype(str).str.strip()
+length_df["PG.ProteinAccessions"] = length_df["PG.ProteinAccessions"].astype(str).str.strip()
+
 
 # Merge mean Length into agg_df (ensuring Length only appears once in the final tsv)
 agg_df = agg_df.merge(length_df, left_on="Prey", right_on="PG.ProteinAccessions", how="left")
@@ -85,14 +79,14 @@ agg_df["BaitSims"] = "#"
 cols = ["Prey", "#", "Length", "BaitSims"] + list(agg_df.columns.difference(["Prey", "#", "Length", "BaitSims"]))
 agg_df = agg_df[cols]
 
-# Create the custom multi-row header, if you have multiple baits, you will need to manually edit the headers below
+# Create the custom multi-row header
 header_1 = ["#", "#", "#", "Exps"] + list(agg_df.columns[4:])
-#Since there is only one bait in this example, "(len(agg_df.columns) - 4)" just repeats the bait for all experiments
-header_2 = ["#", "#", "#", "Baits"] + ["P19484"] * (len(agg_df.columns) - 4)
-header_3 = ["Prey", "#", "Length", "BaitSims"] + ["P19484"] * (len(agg_df.columns) - 4)
+header_2 = ["#", "#", "#", "Baits"] + ["[INSERT BAIT]"] * (len(agg_df.columns) - 4)
+header_3 = ["Prey", "#", "Length", "BaitSims"] + ["[INSERT BAIT]"] * (len(agg_df.columns) - 4)
 
 # Write the final table to a TSV file
-with open("formatted_output12.tsv", "w") as f:
+#Make sure /path/to/mistINPUT.tsv is in the same directory as Spectronaut output (just makes it easier to find)
+with open("/path/to/mistINPUT.tsv", "w") as f:
     f.write("\t".join(header_1) + "\n")
     f.write("\t".join(header_2) + "\n")
     f.write("\t".join(header_3) + "\n")
